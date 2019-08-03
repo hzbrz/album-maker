@@ -53,15 +53,15 @@ class Login extends Component {
     if (!this.state.isSignedIn) {
       return (
         <div>
-          <h1>My App</h1>
+          <h1>Album creator</h1>
           <p>Please sign-in:</p>
-          <StyledFirebaseAuth uiConfig={this.uiConfig} firebaseAuth={firebase.auth()} />
+          <StyledFirebaseAuth uiCallback={ui => console.log(ui)} uiConfig={this.uiConfig} firebaseAuth={firebase.auth()} />
         </div>
       );
     }
     return (
       <div>
-        <h1>My App</h1>
+        <h1>Album creator</h1>
         <p>Welcome {firebase.auth().currentUser.displayName}! You are now signed-in!</p>
         <button onClick={() => firebase.auth().signOut()}>Sign-out</button>
       </div>
