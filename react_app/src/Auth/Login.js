@@ -1,43 +1,72 @@
 import React, { Component } from "react";
-import GoogleLogin from "react-google-login";
-import { google } from "../secrets";
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+import * as firebase from 'firebase';
+import { firebase_config } from "../secrets";
+
+firebase.initializeApp(firebase_config);
 
 class Login extends Component {
+  state = {
+    isSignedIn: false // Local signed-in state.
+  };
 
-  responseGoogle = (response) => {
-    console.log("response from Google Login", response);
-    // let token = response.Zi.id_token.trim()
-    let email = response.profileObj.email
-    let firstName = response.profileObj.givenName
-    let lastName = response.profileObj.familyName
-    // profile image from google dim 96x96px
-    let profile_image = response.profileObj.imageUrl
-    let profile_name = response.profileObj.name
-  }
-
-  // logout = () => { 
-  //   console.log("Logout clicked")
-  // }
-
-  render() {
-    return (
-      <div>
-        <GoogleLogin
-          clientId={google.google_client_id}
-          buttonText="LOGIN WITH GOOGLE"
-          onSuccess={this.responseGoogle}
-          onFailure={this.responseGoogle}
-        />
-        <br/>
-
-    {/* <GoogleLogout
-          clientId={google.google_client_id}
-          buttonText="Logout"
-          onLogoutSuccess={this.logout}
-        ></GoogleLogout> */}
-      </div>
-        );
+  // firebaseUI config 
+  uiConfig = {
+    // Popup signin flow rather than redirect flow.
+    signInFlow: 'popup',
+    // Redirect to /signedIn after sign in is successful. Alternatively you can provide a callbacks.signInSuccess function.
+    // signInSuccessUrl: 'http://localhost:3000',
+    // We will display Google and Facebook as auth providers.
+    signInOptions: [
+      firebase.auth.GoogleAuthProvider.PROVIDER_ID
+    ],
+    callbacks: {
+      // this is the callback that runs after login and gives me the user object
+      signInSuccessWithAuthResult: (authResult) => {
+        console.log(authResult);
+        return false;
       }
     }
-    
+  };
+
+  componentDidMount() {
+    // using the onAuthStateChanged observer to manage user and managing state
+    this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
+      // listening to the firebase Auth state and setting the local state 
+      (user) => {
+        if (user) {
+          // setting state based on firebase auth state
+          this.setState({ isSignedIn: true })
+        } else {
+          this.setState({ isSignedIn: false })
+        }
+      });
+  }
+
+  // Make sure we un-register Firebase observers when the component unmounts.
+  componentWillUnmount() {
+    this.unregisterAuthObserver();
+  }
+
+  render() {
+    // if the user is not signed in or false then show the login page else show the signout button
+    if (!this.state.isSignedIn) {
+      return (
+        <div>
+          <h1>My App</h1>
+          <p>Please sign-in:</p>
+          <StyledFirebaseAuth uiConfig={this.uiConfig} firebaseAuth={firebase.auth()} />
+        </div>
+      );
+    }
+    return (
+      <div>
+        <h1>My App</h1>
+        <p>Welcome {firebase.auth().currentUser.displayName}! You are now signed-in!</p>
+        <button onClick={() => firebase.auth().signOut()}>Sign-out</button>
+      </div>
+    );
+  }
+}
+
 export default Login;
