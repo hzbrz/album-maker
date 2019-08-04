@@ -1,43 +1,24 @@
 import React, { Component } from "react";
 import * as firebase from "firebase";
-import { withRouter, Redirect } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
 
 class Photo extends Component {
-
-  ulStyle = {
-    listStyleType: "none",
-  }
-
-  _isMounted = false;
-
   state = {
-    isSignedIn: false,
-    token: null
+    // JSON.parse turns it into a JS object, localstorage only stores as strings
+    // JSON.stringify is used to store arrays and objects and parse to parse
+    isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
+    token: localStorage.getItem("token")
   }
 
-  componentDidMount() {
-    this._isMounted = true;
-    // using the onAuthStateChanged observer to manage user and managing state
-    this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
-      // listening to the firebase Auth state and setting the local state 
-      (user) => {
-        if (user) {
-          // setting state based on firebase auth state
-          this.setState({ isSignedIn: true })
-        } else {
-          this.setState({ isSignedIn: false })
-        }
-      });
-  }
-
-
+  // function to go to another page and redirect
   nextPath = (path) => {
     this.props.history.push(path);
   }
 
   logout = () => {
     firebase.auth().signOut()
+    localStorage.setItem("isSignedIn", false)
     console.log("Signed out")
     this.nextPath("/")
   }
@@ -46,27 +27,9 @@ class Photo extends Component {
     this.nextPath("/")
   }
 
-  // Make sure we un-register Firebase observers when the component unmounts.
-  componentWillUnmount() {
-    this.unregisterAuthObserver();
-    this._isMounted = false;
-  }
-
   render() {
-    try {
-      let token = this.props.location.state.token;
-    } catch {
-      return (
-        <div>
-          <h1>This is the photo page</h1>
-          <br />
-          <p>Please login agian an error occured</p>
-          <button onClick={this.logout}>Sign-out</button>
-        </div>
-      );
-    }
-
-    if (!this.state.isSignedIn) {
+    // console.log(typeof this.state.isSignedIn)
+    if (this.state.isSignedIn === false) {
       return (
         <div>
           <h1>Album creator</h1>
@@ -77,12 +40,11 @@ class Photo extends Component {
     }
     return (
       <div>
-        <ul style={this.ulStyle}>
-          <li><button onClick={this.logout}>Sign-out</button></li>
-        </ul>
         <h1>This is the photo page</h1>
         <br />
-        <p>Welcome {firebase.auth().currentUser.displayName} ! Do you want to signout</p>
+        <p>Welcome! Do you want to signout</p>
+        <p>{this.state.token}</p>
+        <button onClick={this.logout}>Sign-out</button>
       </div>
     );
   }

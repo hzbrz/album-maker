@@ -6,7 +6,7 @@ import { Redirect } from "react-router-dom";
 class Login extends Component {
 
   state = {
-    isSignedIn: false, // Local signed-in state.
+    isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false, // Local signed-in state.
     token: ""
   };
 
@@ -51,12 +51,15 @@ class Login extends Component {
           })
           .then(resData => {
             console.log("login page", resData)
-            // setting the token to state to pass into photos component
-            this.setState({ isSignedIn: true, token: resData.token });
+            // setting in local storage to persist the data and show appropriate components
+            localStorage.setItem("token", resData.token)
+            localStorage.setItem("userId", resData.userId)
+            localStorage.setItem("isSignedIn", true)
           })
           .catch(err => {
             console.log(err)
-            this.setState({ isSignedIn: false });
+            localStorage.setItem("isSignedIn", false);
+            // this.setState({ isSignedIn: false });
           })
       }
     }
@@ -65,7 +68,7 @@ class Login extends Component {
 
   render() {
     // if the user is not signed in or false then show the login page else show the signout button
-    if (!this.state.isSignedIn) {
+    if (this.state.isSignedIn === false) {
       return (
         <div>
           <h1>Album creator</h1>
@@ -77,7 +80,7 @@ class Login extends Component {
     return (
       <Redirect to={
         // passing the token to the photos page through the react-router props
-        { pathname: "/photos", state: { token: this.state.token } }
+        { pathname: "/photos" }
       } />
     );
   }
