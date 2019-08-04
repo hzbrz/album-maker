@@ -1,8 +1,7 @@
 const authRoutes = require("./routes/authRoutes");
-const { db_name, firebase_config } = require("./secrets");
+const { firebase_config } = require("./secrets");
 const express = require("express");
 const morgan = require("morgan");
-const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const firebase = require("firebase");
 
@@ -37,10 +36,6 @@ app.use("/auth", authRoutes)
 
 const port = 8080;
 
-// connecting to db and turning on the server depending if we can connect to the db or not
-mongoose.connect(`mongodb://localhost:27017/${db_name}`, {useNewUrlParser: true})
-  .then(result => {
-    console.log("db connected")
-    app.listen(port);
-  })
-  .catch(err => console.log(err))
+app.listen(port, () => {
+  console.log("app is listening on port " + port)
+});
