@@ -1,4 +1,6 @@
 const firebase = require("firebase");
+const jwt = require("jsonwebtoken");
+const jwt_secret = require("../secrets").jwt.secret;
 
 exports.getUser = (req, res) => {
   res.send("Login page")
@@ -14,9 +16,11 @@ exports.login = (req, res, next) => {
   // const username = req.body.profile_name
 
   // using firestore to find the user with email math and if not found then user gets created
-  // TODO - create JWT and use it to auth and send JWT to client and auth using that is-auth
   let firestore = firebase.firestore();
   let usersCollection = firestore.collection("users")
+
+  // this is the var that will store the token
+  let token;
   // query where the user's email match
   let query = usersCollection.where("email", "==", email).get()
     .then(userDoc => {
@@ -32,18 +36,33 @@ exports.login = (req, res, next) => {
           // returned promise has the user object that I can use
           .then(userRef => {
             console.log("User created")
-            console.log(userRef.id)
-            userRef.onSnapshot(snap => console.log(snap.data(), snap.id))
-            res.status(201).json({ message: "User created", userId: userRef.id })
+            userRef.onSnapshot(snap => {
+              // creating the JWT token so I can pass it to client
+              token = jwt.sign({
+                email: snap.data().email,
+                userId: snap.id
+              }, jwt_secret, { expiresIn: "1h" })
+              // sending the token and userId to the client after user gets created
+              res.status(201).json({ message: "User created", userId: userRef.id, token: token })
+            })
           })
           .catch(error => console.log("error while creating user in db ", error))
-      } else {
-        // otherwise if user is found then get the user data and send it to client along with JWT
+      }
+      // otherwise if user is found then get the user data and send it to client along with JWT 
+      else {
+        // storing the id in this var so I have scope outside of forEach
+        let id;
         console.log("User found")
         userDoc.forEach(snap => {
-          console.log(snap.id, "=> ", snap.data())
-          res.status(200).json({ message: "User found", userId: snap.id })
+          id = snap.id
+          // creating JWT token
+          token = jwt.sign({
+            email: snap.data().email,
+            userId: snap.id
+          }, jwt_secret, { expiresIn: "1h" })
         }) 
+        // sending the token and userId to the client after user gets found
+        res.status(200).json({ message: "User found", userId: id, token: token })
       }
     })
     .catch(err => console.log("Error getting documents ", err))
