@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
 import * as firebase from 'firebase';
-import { firebase_config } from "../secrets";
+import { firebaseConfig } from "../secrets";
 
-firebase.initializeApp(firebase_config);
+firebase.initializeApp(firebaseConfig);
 
 class Login extends Component {
   state = {
@@ -24,7 +24,44 @@ class Login extends Component {
       // this is the callback that runs after login and gives me the user object
       signInSuccessWithAuthResult: (authResult) => {
         console.log(authResult);
-        return false;
+        // let token = authResult.credential.idToken.trim()
+        // send request to API with the body after login
+        fetch("http://localhost:8080/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          // this is the request body that will be passed into the server 
+          body: JSON.stringify({
+            email: authResult.additionalUserInfo.profile.email,
+            firstName: authResult.additionalUserInfo.profile.given_name,
+            lastName: authResult.additionalUserInfo.profile.family_name,
+            profile_image: authResult.additionalUserInfo.profile.picture,
+            profile_name: authResult.additionalUserInfo.profile.name
+          })
+        })
+          .then(res => {
+            if (res.status === 422) {
+              throw new Error("Validation failed.");
+            }
+            if (res.status !== 200 && res.status !== 201) {
+              console.log('Error!');
+              throw new Error('Creating a user failed!');
+            }
+            return res.json();
+          })
+          .then(resData => {
+            console.log("login page", resData)
+            // setting the token to state to pass into photos component
+            this.setState({ isSignedIn: true, /** token: resData.token */ });
+          })
+          .catch(err => {
+            console.log(err)
+            this.setState({ isSignedIn: false });
+          })
+
+        // do not redirect
+        // return false;
       }
     }
   };
@@ -55,7 +92,7 @@ class Login extends Component {
         <div>
           <h1>Album creator</h1>
           <p>Please sign-in:</p>
-          <StyledFirebaseAuth uiCallback={ui => console.log(ui)} uiConfig={this.uiConfig} firebaseAuth={firebase.auth()} />
+          <StyledFirebaseAuth uiConfig={this.uiConfig} firebaseAuth={firebase.auth()} />
         </div>
       );
     }
