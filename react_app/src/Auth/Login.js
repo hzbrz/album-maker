@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
-import * as firebase from 'firebase';
-import { firebaseConfig } from "../secrets";
-
-firebase.initializeApp(firebaseConfig);
+import * as firebase from "firebase";
+import { Redirect } from "react-router-dom";
 
 class Login extends Component {
+
   state = {
-    isSignedIn: false // Local signed-in state.
+    isSignedIn: false, // Local signed-in state.
+    token: ""
   };
 
   // firebaseUI config 
@@ -23,7 +23,6 @@ class Login extends Component {
     callbacks: {
       // this is the callback that runs after login and gives me the user object
       signInSuccessWithAuthResult: (authResult) => {
-        console.log(authResult);
         // let token = authResult.credential.idToken.trim()
         // send request to API with the body after login
         fetch("http://localhost:8080/auth/login", {
@@ -53,37 +52,16 @@ class Login extends Component {
           .then(resData => {
             console.log("login page", resData)
             // setting the token to state to pass into photos component
-            this.setState({ isSignedIn: true, /** token: resData.token */ });
+            this.setState({ isSignedIn: true, token: resData.token });
           })
           .catch(err => {
             console.log(err)
             this.setState({ isSignedIn: false });
           })
-
-        // do not redirect
-        // return false;
       }
     }
   };
 
-  componentDidMount() {
-    // using the onAuthStateChanged observer to manage user and managing state
-    this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
-      // listening to the firebase Auth state and setting the local state 
-      (user) => {
-        if (user) {
-          // setting state based on firebase auth state
-          this.setState({ isSignedIn: true })
-        } else {
-          this.setState({ isSignedIn: false })
-        }
-      });
-  }
-
-  // Make sure we un-register Firebase observers when the component unmounts.
-  componentWillUnmount() {
-    this.unregisterAuthObserver();
-  }
 
   render() {
     // if the user is not signed in or false then show the login page else show the signout button
@@ -97,11 +75,10 @@ class Login extends Component {
       );
     }
     return (
-      <div>
-        <h1>Album creator</h1>
-        <p>Welcome {firebase.auth().currentUser.displayName}! You are now signed-in!</p>
-        <button onClick={() => firebase.auth().signOut()}>Sign-out</button>
-      </div>
+      <Redirect to={
+        // passing the token to the photos page through the react-router props
+        { pathname: "/photos", state: { token: this.state.token } }
+      } />
     );
   }
 }
