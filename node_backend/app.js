@@ -1,12 +1,15 @@
 const authRoutes = require("./routes/authRoutes");
-const { db_name } = require("./secrets");
+const { db_name, firebase_config } = require("./secrets");
 const express = require("express");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const firebase = require("firebase");
 
 // express app
-const app = express()
+const app = express();
+
+firebase.initializeApp(firebase_config);
 
 app.use(bodyParser.json())
 
