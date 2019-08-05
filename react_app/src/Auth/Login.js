@@ -55,6 +55,8 @@ class Login extends Component {
             localStorage.setItem("token", resData.token)
             localStorage.setItem("userId", resData.userId)
             localStorage.setItem("isSignedIn", true)
+            // have to set state to true here as well to update the state after loggin in and redirect to the photos page
+            this.setState({ isSignedIn: true })
           })
           .catch(err => {
             console.log(err)
