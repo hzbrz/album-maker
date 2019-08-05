@@ -2,8 +2,23 @@ const firebase = require("firebase");
 const jwt = require("jsonwebtoken");
 const jwt_secret = require("../secrets").jwt.secret;
 
-exports.getUser = (req, res) => {
-  res.send("Login page")
+exports.getUser = (req, res, next) => {
+  // vars to store pulled things from db
+  let email, image, name;
+  // user id that I get from the is-auth middleware
+  userId = req.userId;
+  let firestore = firebase.firestore();
+  // this is the user that is located in that id 
+  let userObjectFromDb = firestore.doc("users/" + userId)
+  userObjectFromDb.get()
+    .then(userDoc => {
+      // getting and storing the user's info from db to send to client
+      email = userDoc.data().email;
+      image = userDoc.data().profileImage;
+      name = userDoc.data().name
+      res.status(200).json({ message: "user gotten", email: email, name: name, profilePic: image })
+    })
+    .catch(err => console.log("Could not get the user from db"))
 }
 
 // this function is going to take the data from social login (google login) then use that to sign the user into the api/server
@@ -30,21 +45,23 @@ exports.login = (req, res, next) => {
         // create the user in users collection in firestore
         firestore.collection("users").add({
           email: email,
-          name: firstName + lastName,
+          name: firstName + " " + lastName,
           profileImage: profile_pic
         })
           // returned promise has the user object that I can use
           .then(userRef => {
             console.log("User created")
-            userRef.onSnapshot(snap => {
-              // creating the JWT token so I can pass it to client
-              token = jwt.sign({
-                email: snap.data().email,
-                userId: snap.id
-              }, jwt_secret, { expiresIn: "1h" })
-              // sending the token and userId to the client after user gets created
-              res.status(201).json({ message: "User created", userId: userRef.id, token: token })
-            })
+            userRef.get()
+              .then(snap => {
+                // creating the JWT token so I can pass it to client
+                token = jwt.sign({
+                  email: snap.data().email,
+                  userId: snap.id
+                }, jwt_secret, { expiresIn: "10h" })
+                // sending the token and userId to the client after user gets created
+                res.status(201).json({ message: "User created", userId: userRef.id, token: token })
+              })
+              .catch(err => console.log("Could not get data for token ", err))
           })
           .catch(error => console.log("error while creating user in db ", error))
       }
@@ -60,7 +77,7 @@ exports.login = (req, res, next) => {
             email: snap.data().email,
             userId: snap.id
           }, jwt_secret, { expiresIn: "1h" })
-        }) 
+        })
         // sending the token and userId to the client after user gets found
         res.status(200).json({ message: "User found", userId: id, token: token })
       }
