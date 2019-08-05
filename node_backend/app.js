@@ -1,4 +1,5 @@
 const authRoutes = require("./routes/authRoutes");
+const photoRoutes = require("./routes/photoRoutes");
 const { firebase_config } = require("./secrets");
 const express = require("express");
 const morgan = require("morgan");
@@ -32,7 +33,8 @@ app.use((req, res, next) => {
   next();
 })
 
-app.use("/auth", authRoutes)
+app.use("/auth", authRoutes);
+app.use("/album", photoRoutes)
 
 const port = 8080;
 

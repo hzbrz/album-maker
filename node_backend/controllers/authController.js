@@ -57,7 +57,7 @@ exports.login = (req, res, next) => {
                 token = jwt.sign({
                   email: snap.data().email,
                   userId: snap.id
-                }, jwt_secret, { expiresIn: "10h" })
+                }, jwt_secret)
                 // sending the token and userId to the client after user gets created
                 res.status(201).json({ message: "User created", userId: userRef.id, token: token })
               })
@@ -76,7 +76,7 @@ exports.login = (req, res, next) => {
           token = jwt.sign({
             email: snap.data().email,
             userId: snap.id
-          }, jwt_secret, { expiresIn: "1h" })
+          }, jwt_secret)
         })
         // sending the token and userId to the client after user gets found
         res.status(200).json({ message: "User found", userId: id, token: token })
