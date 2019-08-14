@@ -38,24 +38,13 @@ exports.getUserPhotos = (req, res, next) => {
 }
 
 exports.storePhoto = (req, res, next) => {
-  const dataUri = req.body.imageUrl;
-  let path = ""
-  let filePath = 'C:\\Users\\wazih\\Desktop\\courses\\Wedding\\react_app\\public\\images\\filename.png';
+  const byteString = req.body.imageUrl;
+  // separate out the mime component
+  let mimeString = "image/png"  
 
-  return new Promise((resolve, reject) => {
-    imageDataUri.outputFile(dataUri, filePath)
-    .then(path => {
-      console.log(path)
-      resolve(path)
-    })
-    .catch(err => console.log(err))
-  }).then(data => {
-    res.status(200).json({
-      message: "photo stored",
-      path: data
-    })
+  res.status(200).json({
+    message: "photo stored"
   })
-
 
   // let userId = req.userId
   // let firestore = firebase.firestore();
