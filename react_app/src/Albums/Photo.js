@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import * as firebase from "firebase";
+import Camera from 'react-html5-camera-photo';
+import "react-html5-camera-photo/build/css/index.css";
 
 class Photo extends Component {
 
@@ -46,29 +48,30 @@ class Photo extends Component {
     });
   }
 
-  uploadPhotos = () => {
-    fetch("http://localhost:8080/album/photo", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${this.state.token}`
-      },
-      // this is the request body that will be passed into the server 
-      body: JSON.stringify({
-        imageUrl: this.state.formControls.image.value,
-      })
-    })
-      .then(res => {
-        if (res.status !== 200) {
-          console.error("could not fetch the photos");
-        }
+  uploadPhotos = (dataUri) => {
+    let dataString = dataUri.split(',')[1]
+    let path = dataString.slice(200, 220).split("/")[0] + "thistoday"
+    let byteString = atob(dataString);
+    console.log(path)
 
-        return res.json()
+    let storageRef = firebase.storage().ref("images/" + path)
+    // separate out the mime component
+    let mimeString = dataUri.split(',')[0].split(':')[1].split(';')[0];
+
+    // write the bytes of the string to an ArrayBuffer
+    let arrayBuffer = new ArrayBuffer(byteString.length);
+    let imageStream = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < byteString.length; i++) {
+      imageStream[i] = byteString.charCodeAt(i);
+    }
+
+    let dataView = new DataView(arrayBuffer);
+    let blob = new Blob([dataView], { type: mimeString });
+    storageRef.put(blob)
+      .then(snap => {
+        console.log("photo stored", snap)
       })
-      .then(resData => {
-        console.log(resData);
-      })
-      .catch(err => console.log(err))
+      .catch(err => console.log("ERROR while uploading photo ", err))
   }
 
   getPhotos = () => {
@@ -91,7 +94,7 @@ class Photo extends Component {
       })
       .catch(err => console.log(err))
   }
-  
+
   render() {
     if (this.state.isSignedIn === false) {
       return (
@@ -106,16 +109,9 @@ class Photo extends Component {
       <div>
         <h1>This is the Photos page</h1>
         <br />
-        <form>
-          <input
-            type="imageUrl"
-            name="image"
-            value={this.state.formControls.image.value}
-            onChange={this.changeHandler}
-            placeholder={"Enter your image url"}
-          />
-        </ form>
-        <button onClick={this.uploadPhotos}>Upload photo</button>
+        <Camera
+          onTakePhoto={(dataUri) => { this.uploadPhotos(dataUri); }}
+        />
         &nbsp; <button onClick={this.getPhotos}>Get photos</button>
         <p> Do you want to signout?</p>
         <button onClick={this.logout}>Sign-out</button>
