@@ -11,7 +11,7 @@ const app = express();
 
 firebase.initializeApp(firebase_config);
 
-app.use(bodyParser.json())
+app.use(bodyParser.json({ limit: "5mb" }))
 
 app.use(morgan("dev"))
 
