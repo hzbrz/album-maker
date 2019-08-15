@@ -9,6 +9,7 @@ class Photo extends Component {
     // JSON.parse turns it into a JS object, localstorage only stores as strings
     // JSON.stringify is used to store arrays and objects and parse to parse
     isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
+    userId: localStorage.getItem("userId"),
     token: localStorage.getItem("token"),
     formControls: {
       image: {
@@ -33,6 +34,10 @@ class Photo extends Component {
     this.nextPath("/")
   }
 
+  goToPhotosFeed = () => {
+    this.nextPath("/photos")
+  }
+
   changeHandler = event => {
     const name = event.target.name;
     const value = event.target.value;
@@ -50,13 +55,16 @@ class Photo extends Component {
 
   uploadPhotos = (dataUri) => {
     let dataString = dataUri.split(',')[1]
-    let path = dataString.slice(200, 220).split("/")[0] + "thistoday"
+    // let path = dataString.slice(200, 220).split("/")[0] + "thistoday";
+    let date = new Date().toJSON().slice(0, 10)
+    let ms = Date.now();
     let byteString = atob(dataString);
-    console.log(path)
 
-    let storageRef = firebase.storage().ref("images/" + path)
-    // separate out the mime component
-    let mimeString = dataUri.split(',')[0].split(':')[1].split(';')[0];
+    // this is the storage reference path
+    let storageRef = firebase.storage().ref(this.state.userId + "/image@ " + date + ms);
+    // this is the mime from the dataUri
+    // let mimeString = dataUri.split(',')[0].split(':')[1].split(';')[0];
+    let mimeString = "image/jpg"
 
     // write the bytes of the string to an ArrayBuffer
     let arrayBuffer = new ArrayBuffer(byteString.length);
@@ -64,35 +72,42 @@ class Photo extends Component {
     for (let i = 0; i < byteString.length; i++) {
       imageStream[i] = byteString.charCodeAt(i);
     }
-
+    // create a new dataview with the arraybuffer to create the blob
     let dataView = new DataView(arrayBuffer);
+    // create blob and store in firebase storage
     let blob = new Blob([dataView], { type: mimeString });
+    // using the put method to store the blob
     storageRef.put(blob)
       .then(snap => {
-        console.log("photo stored", snap)
+        // getting the downloadUrl from the storage after storing
+        snap.ref.getDownloadURL().then(url => {
+          console.log("File available at: ", url)
+          // sending a post request with the download URL so I can store in db from API
+          fetch("http://localhost:8080/album/photo", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${this.state.token}`
+            },
+            // this is the request body that will be passed into the server 
+            body: JSON.stringify({
+              imageUrl: url,
+            })
+          })
+            .then(res => {
+              if (res.status !== 200) {
+                console.error("could not fetch the photos");
+              }
+
+              return res.json()
+            })
+            .then(resData => {
+              console.log(resData);
+            })
+            .catch(err => console.log(err))
+        })
       })
       .catch(err => console.log("ERROR while uploading photo ", err))
-  }
-
-  getPhotos = () => {
-    fetch("http://localhost:8080/album/photos", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${this.state.token}`
-      }
-    })
-      .then(res => {
-        if (res.status !== 200) {
-          console.error("could not fetch the photos");
-        }
-
-        return res.json()
-      })
-      .then(resData => {
-        console.log(resData);
-      })
-      .catch(err => console.log(err))
   }
 
   render() {
@@ -107,14 +122,16 @@ class Photo extends Component {
     }
     return (
       <div>
-        <h1>This is the Photos page</h1>
-        <br />
-        <Camera
-          onTakePhoto={(dataUri) => { this.uploadPhotos(dataUri); }}
-        />
-        &nbsp; <button onClick={this.getPhotos}>Get photos</button>
-        <p> Do you want to signout?</p>
-        <button onClick={this.logout}>Sign-out</button>
+        <h1>Take a Photo</h1>
+        <button onClick={this.goToPhotosFeed}>Go to Feed</button>
+        <div>
+          <br />
+          <Camera
+            onTakePhoto={(dataUri) => { this.uploadPhotos(dataUri); }}
+          />
+          <p> Do you want to signout?</p>
+          <button onClick={this.logout}>Sign-out</button>
+        </div>
       </div>
     );
   }
