@@ -1,43 +1,38 @@
 const firebase = require("firebase");
 
-// const admin = require("firebase-admin");
-// const bucket = require("../secrets").bucket;
-// const serviceAccount = require("C:\\Users\\wazih\\Desktop\\courses\\keys\\wedding_serviceAccountKey.json");
-
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-//   storageBucket: bucket
-// });
-
-
 exports.getUserPhotos = (req, res, next) => {
   let userId = req.userId;
   let imageArray = [];
   let firestore = firebase.firestore();
   firestore.collection('photos').where("creator", "==", userId).get()
     .then(snap => {
-      snap.forEach(image => {
-        return new Promise((resolve, reject) => {
-          imageArray.push(image.data().image)
+      return new Promise((resolve, reject) => {
+        snap.forEach(image => {
+          let imageObj = {
+            image: image.data().image,
+            _id: image.id
+          }
+          imageArray.push(imageObj)
           resolve(imageArray);
-        }) 
+        })
+      })
         .then(imageArr => {
-          console.log(imageArr)
           res.status(200).json({ message: "User photos fetched", images: imageArr })
         })
-        .catch(err => console.log("ERROR cant find pictures ", err))
-      })
+        .catch(err => console.log("ERROR cant find pictures "))
     })
-    .catch(err => console.log("ERROR while getting photos ", err))
+    .catch(err => console.log("ERROR while getting photos ", err.message))
 }
 
 exports.storePhoto = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
+  const path = req.body.filepath;
   let userId = req.userId
   let firestore = firebase.firestore();
   let userObjectFromDb = firestore.doc("users/" + userId);
   firestore.collection("photos").add({
     image: imageUrl,
+    filepath: path,
     creator: userId
   })
     .then(photoRef => {
@@ -65,4 +60,21 @@ exports.storePhoto = (req, res, next) => {
         .catch(err => console.log("no image is found ", err))
     })
     .catch(err => console.log("ERROR while storing the photo ", err))
+}
+
+
+exports.deletePhoto = (req, res, next) => {
+  // reading the id from the parameter of the request
+  const photoId = req.params.photoId;
+  let userId = req.userId;
+  let firestore = firebase.firestore();
+  let userDocRef = firestore.collection("users").doc(userId)
+  userDocRef.update({ photos: firebase.firestore.FieldValue.arrayRemove(photoId) })
+  firestore.collection('photos').doc(photoId).get()
+    .then(snap => {
+      console.log(snap.data().filepath)
+      res.json({ message: "User deleted", path: snap.data().filepath })
+      firestore.collection('photos').doc(photoId).delete();
+    })
+    .catch(err => console.log("ERROR while getting photo from db ", err))
 }
