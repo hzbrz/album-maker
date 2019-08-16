@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import * as firebase from "firebase";
 
 class Photos extends Component {
 
@@ -44,6 +45,31 @@ class Photos extends Component {
       .catch(err => console.log(err))
   }
 
+  deletePost = (photoId) => {
+    fetch("http://localhost:8080/album/photo/" + photoId, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${this.state.token}`
+      }
+    })
+      .then(res => {
+        if (res.status !== 200) {
+          console.error("could not fetch the photos");
+        }
+
+        return res.json()
+      })
+      .then(resData => {
+        let photoStorageref = firebase.storage().ref(resData.path);
+        photoStorageref.delete()
+          .then(result => {
+            console.log("PHOTO DELETED FROM STORAGE ")
+          })
+          .catch(err => console.log("ERROR WHILE DELETING FROM STORAGE ", err))
+      })
+      .catch(err => console.log("ERROR while deleting data ", err))
+  }
+
   // function to go to another page and redirect
   nextPath = (path) => {
     this.props.history.push(path);
@@ -60,7 +86,10 @@ class Photos extends Component {
         <div style={this.imageContainer}>
           <ul style={this.ulStyle}>
             {this.state.images.map((item) => (
-              <li style={this.liStyle} key={item}><img style={this.imgStyle} src={item} alt="user" /></li>
+              <li style={this.liStyle} key={item._id}>
+                <img style={this.imgStyle} src={item.image} alt="user" />
+                <button onClick={this.deletePost.bind(this, item._id)}>Delete photo</button>
+              </li>
             ))}
           </ul>
         </div>

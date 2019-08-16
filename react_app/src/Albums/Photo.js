@@ -92,6 +92,7 @@ class Photo extends Component {
             // this is the request body that will be passed into the server 
             body: JSON.stringify({
               imageUrl: url,
+              filepath: snap.metadata.fullPath
             })
           })
             .then(res => {
