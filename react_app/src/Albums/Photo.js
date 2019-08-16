@@ -11,6 +11,7 @@ class Photo extends Component {
     isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
     userId: localStorage.getItem("userId"),
     token: localStorage.getItem("token"),
+    photoInserted: false,
     formControls: {
       image: {
         value: ""
@@ -103,7 +104,8 @@ class Photo extends Component {
               return res.json()
             })
             .then(resData => {
-              console.log(resData);
+              console.log("Photo inserted ", resData);
+              this.setState({ photoInserted: true })
             })
             .catch(err => console.log(err))
         })
@@ -124,7 +126,7 @@ class Photo extends Component {
     return (
       <div>
         <h1>Take a Photo</h1>
-        <button onClick={this.goToPhotosFeed}>Go to Feed</button>
+        {this.state.photoInserted ? <button onClick={this.goToPhotosFeed}>Go to Feed</button> : <h4>Loading...</h4>}
         <div>
           <br />
           <Camera
