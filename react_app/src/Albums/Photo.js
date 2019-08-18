@@ -11,7 +11,7 @@ class Photo extends Component {
     isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
     userId: localStorage.getItem("userId"),
     token: localStorage.getItem("token"),
-    photoInserted: false,
+    photoInserted: true,
     formControls: {
       image: {
         value: ""
@@ -55,6 +55,7 @@ class Photo extends Component {
   }
 
   uploadPhotos = (dataUri) => {
+    this.setState({ photoInserted: false })
     let dataString = dataUri.split(',')[1]
     // let path = dataString.slice(200, 220).split("/")[0] + "thistoday";
     let date = new Date().toJSON().slice(0, 10)

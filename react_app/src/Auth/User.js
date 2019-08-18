@@ -25,9 +25,8 @@ class User extends Component {
 
   // sending fetch post req for user profile information from api
   componentDidMount() {
-    console.log("TRYING TO FETCH USER")
     fetch("http://localhost:8080/auth/user", {
-      method: "POST",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${this.state.token}`
@@ -68,6 +67,31 @@ class User extends Component {
     this.nextPath("/")
   }
 
+  createRoom = () => {
+    console.log("Trying to create room")
+    fetch("http://localhost:8080/setting/room", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${this.state.token}`
+      },
+      body: JSON.stringify({
+        name: this.state.name
+      })
+    })
+      .then(res => {
+        if (res.status !== 200) {
+          console.error("could not fetch the user");
+        }
+
+        return res.json()
+      })
+      .then(resData => {
+        console.log("User data: ", resData);
+      })
+      .catch(err => console.log(err))
+  }
+
   render() {
     // console.log(typeof this.state.isSignedIn)
     if (this.state.isSignedIn === false) {
@@ -86,6 +110,9 @@ class User extends Component {
         <img style={this.photoStyle} src={this.state.profilePic} alt="User's profile" />
         <p>Email: {this.state.email}</p>
         <p>Welcome {this.state.name}! Do you want to signout?</p>
+        <button onClick={this.createRoom}>Create Room</button>
+        <br />
+        <br />
         <button onClick={this.logout}>Sign-out</button>
       </div>
     );

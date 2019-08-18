@@ -23,6 +23,7 @@ class Photos extends Component {
     images: []
   }
 
+
   componentDidMount = () => {
     fetch("http://localhost:8080/album/photos", {
       method: "GET",
@@ -60,10 +61,11 @@ class Photos extends Component {
         return res.json()
       })
       .then(resData => {
+        console.log("Photo deleted ", resData)
         let photoStorageref = firebase.storage().ref(resData.path);
         photoStorageref.delete()
           .then(result => {
-            console.log("PHOTO DELETED FROM STORAGE ")
+            console.log("PHOTO DELETED FROM STORAGE ".toLowerCase())
           })
           .catch(err => console.log("ERROR WHILE DELETING FROM STORAGE ", err))
       })
