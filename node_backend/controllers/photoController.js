@@ -72,7 +72,6 @@ exports.deletePhoto = (req, res, next) => {
   userDocRef.update({ photos: firebase.firestore.FieldValue.arrayRemove(photoId) })
   firestore.collection('photos').doc(photoId).get()
     .then(snap => {
-      console.log(snap.data().filepath)
       res.json({ message: "User deleted", path: snap.data().filepath })
       firestore.collection('photos').doc(photoId).delete();
     })
