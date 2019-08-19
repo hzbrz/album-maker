@@ -7,8 +7,18 @@ class Login extends Component {
 
   state = {
     isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false, // Local signed-in state.
-    token: ""
+    token: "",
+    albumId: ""
   };
+
+  componentDidMount() {
+    // this is used to check if the user is redirected from a referral link
+    if (typeof this.props.location.state == "undefined") {
+      this.setState({ albumId: null })
+    } else {
+      this.setState({ albumId: this.props.location.state.albumId.split("/")[1].trim() })
+    }
+  }
 
   // firebaseUI config 
   uiConfig = {
@@ -36,7 +46,8 @@ class Login extends Component {
             firstName: authResult.additionalUserInfo.profile.given_name,
             lastName: authResult.additionalUserInfo.profile.family_name,
             profile_image: authResult.additionalUserInfo.profile.picture,
-            profile_name: authResult.additionalUserInfo.profile.name
+            profile_name: authResult.additionalUserInfo.profile.name,
+            albumId: this.state.albumId
           })
         })
           .then(res => {
@@ -69,6 +80,7 @@ class Login extends Component {
 
 
   render() {
+    console.log(this.state.albumId)
     // if the user is not signed in or false then show the login page else show the signout button
     if (this.state.isSignedIn === false) {
       return (
