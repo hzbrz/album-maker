@@ -29,6 +29,13 @@ exports.login = (req, res, next) => {
   const lastName = req.body.lastName
   const profile_pic = req.body.profile_image
   // const username = req.body.profile_name
+  // the album_id is the id from the referral link url
+  const album_id = req.body.albumId
+  if (!album_id) {
+    console.log('The album Id is null ', album_id)
+  } else {
+    console.log("Album id exists and it is: ", album_id)
+  }
 
   // using firestore to find the user with email math and if not found then user gets created
   let firestore = firebase.firestore();
