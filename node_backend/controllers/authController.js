@@ -28,14 +28,8 @@ exports.login = (req, res, next) => {
   const firstName = req.body.firstName
   const lastName = req.body.lastName
   const profile_pic = req.body.profile_image
-  // const username = req.body.profile_name
-  // the album_id is the id from the referral link url
+  // album_id represent the last part of the invitation link and is used to check if the user should be created normally or not
   const album_id = req.body.albumId
-  if (!album_id) {
-    console.log('The album Id is null ', album_id)
-  } else {
-    console.log("Album id exists and it is: ", album_id)
-  }
 
   // using firestore to find the user with email math and if not found then user gets created
   let firestore = firebase.firestore();
@@ -44,7 +38,7 @@ exports.login = (req, res, next) => {
   // this is the var that will store the token
   let token;
   // query where the user's email match
-  let query = usersCollection.where("email", "==", email).get()
+  usersCollection.where("email", "==", email).get()
     .then(userDoc => {
       // if no matching users are found
       if (userDoc.empty) {
@@ -65,8 +59,33 @@ exports.login = (req, res, next) => {
                   email: snap.data().email,
                   userId: snap.id
                 }, jwt_secret)
-                // sending the token and userId to the client after user gets created
-                res.status(201).json({ message: "User created", userId: userRef.id, token: token })
+                // checking here if an invitation link was hit in the frontend
+                if (!album_id) {
+                  console.log('The album Id is null, create user normally')
+                  // if there is no inivation link or album id then send albumId as null for client side operations
+                  res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: null })
+                } else {
+                  // put user as a part of album in the photos collection
+                  firestore.collection("albums").get()
+                    .then(snap => {
+                      snap.forEach(data => {
+                        // checking of there is acutally an album with the same id to cerify if the room exists
+                        if (data.id == album_id) {
+                          console.log("Album id matched!")
+                          // then setting
+                          firestore.collection("users").doc(userRef.id).update({
+                            albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(album_id)
+                          })
+                          // sending resposne with the albumId for client side operations
+                          res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: album_id })
+                        } else {
+                          // sending the token and userId to the client after user gets found
+                          res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: null })
+                        }
+                      })
+                    })
+                    .catch(err => console.log("Trouble while getting the albums collection ", err))
+                }
               })
               .catch(err => console.log("Could not get data for token ", err))
           })
@@ -85,8 +104,29 @@ exports.login = (req, res, next) => {
             userId: snap.id
           }, jwt_secret)
         })
-        // sending the token and userId to the client after user gets found
-        res.status(200).json({ message: "User found", userId: id, token: token })
+        // checking here if an invitation link was hit in the frontend
+        if (!album_id) {
+          console.log('The album Id is null, create user normally')
+          res.status(200).json({ message: "User found", userId: id, token: token, albumId: null })
+        } else {
+          // put user as a part of album in the photos collection
+          firestore.collection("albums").get()
+            .then(snap => {
+              snap.forEach(data => {
+                console.log("Album id matched")
+                if (data.id == album_id) {
+                  firestore.collection("users").doc(id).update({
+                    albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(album_id)
+                  })
+                  res.status(200).json({ message: "User found", userId: id, token: token, albumId: album_id })
+                } else {
+                  // sending the token and userId to the client after user gets found
+                  res.status(200).json({ message: "User found", userId: id, token: token })
+                }
+              })
+            })
+            .catch(err => console.log("Trouble while getting the albums collection ", err))
+        }
       }
     })
     .catch(err => console.log("Error getting documents ", err))

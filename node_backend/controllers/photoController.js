@@ -1,6 +1,7 @@
 const firebase = require("firebase");
 
 exports.getUserPhotos = (req, res, next) => {
+  // if album id exists then get album photos, else just get user photos
   let userId = req.userId;
   let imageArray = [];
   let firestore = firebase.firestore();
