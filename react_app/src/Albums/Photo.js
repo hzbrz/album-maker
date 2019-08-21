@@ -19,11 +19,6 @@ class Photo extends Component {
     }
   }
 
-  // function to go to another page and redirect
-  nextPath = (path) => {
-    this.props.history.push(path);
-  }
-
   logout = () => {
     firebase.auth().signOut()
     localStorage.setItem("isSignedIn", false)
@@ -36,7 +31,7 @@ class Photo extends Component {
   }
 
   goToPhotosFeed = () => {
-    this.nextPath("/photos")
+    this.props.history.push("/photos", { albumId: this.props.location.state.albumId });
   }
 
   changeHandler = event => {

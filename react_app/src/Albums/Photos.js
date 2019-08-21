@@ -25,12 +25,17 @@ class Photos extends Component {
 
 
   componentDidMount = () => {
+    console.log(this.props.location.state.albumId)
+
     fetch("http://localhost:8080/album/photos", {
-      method: "GET",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${this.state.token}`
-      }
+      }, 
+      body: JSON.stringify({
+        albumId: this.props.location.state.albumId
+      })
     })
       .then(res => {
         if (res.status !== 200) {
@@ -72,13 +77,10 @@ class Photos extends Component {
       .catch(err => console.log("ERROR while deleting data ", err))
   }
 
-  // function to go to another page and redirect
-  nextPath = (path) => {
-    this.props.history.push(path);
-  }
-
   ifNotLoggedInGoBack = () => {
-    this.nextPath("/photo")
+    this.props.history.push("/photo", {
+      albumId: this.props.location.state.albumId
+    })
   }
 
   render() {

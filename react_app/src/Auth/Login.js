@@ -67,7 +67,7 @@ class Login extends Component {
             localStorage.setItem("userId", resData.userId)
             localStorage.setItem("isSignedIn", true)
             // have to set state to true here as well to update the state after loggin in and redirect to the photos page
-            this.setState({ isSignedIn: true })
+            this.setState({ isSignedIn: true, albumId: resData.albumId })
           })
           .catch(err => {
             console.log(err)
@@ -94,7 +94,7 @@ class Login extends Component {
     return (
       <Redirect to={
         // passing the token to the photos page through the react-router props
-        { pathname: "/photos" }
+        { pathname: "/photos", state: { albumId: this.state.albumId } }
       } />
     );
   }
