@@ -57,7 +57,8 @@ exports.login = (req, res, next) => {
                 // creating the JWT token so I can pass it to client
                 token = jwt.sign({
                   email: snap.data().email,
-                  userId: snap.id
+                  userId: snap.id,
+                  albumId: album_id
                 }, jwt_secret)
                 // checking here if an invitation link was hit in the frontend
                 if (!album_id) {
@@ -79,7 +80,8 @@ exports.login = (req, res, next) => {
                           // sending resposne with the albumId for client side operations
                           res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: album_id })
                         } else {
-                          // sending the token and userId to the client after user gets found
+                          // if the albumId does not match any of the rooms that in the db then
+                          console.log("Album id was not matched with anything in db albums")
                           res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: null })
                         }
                       })
@@ -101,7 +103,8 @@ exports.login = (req, res, next) => {
           // creating JWT token
           token = jwt.sign({
             email: snap.data().email,
-            userId: snap.id
+            userId: snap.id,
+            albumId: album_id
           }, jwt_secret)
         })
         // checking here if an invitation link was hit in the frontend
@@ -113,15 +116,15 @@ exports.login = (req, res, next) => {
           firestore.collection("albums").get()
             .then(snap => {
               snap.forEach(data => {
-                console.log("Album id matched")
                 if (data.id == album_id) {
+                  console.log("Album id matched")
                   firestore.collection("users").doc(id).update({
                     albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(album_id)
                   })
                   res.status(200).json({ message: "User found", userId: id, token: token, albumId: album_id })
                 } else {
-                  // sending the token and userId to the client after user gets found
-                  res.status(200).json({ message: "User found", userId: id, token: token })
+                  console.log("Album id was not matched with anything in db albums")
+                  res.status(200).json({ message: "User found", userId: id, token: token, albumId: null })
                 }
               })
             })
