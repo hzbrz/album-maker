@@ -34,20 +34,7 @@ exports.getUserPhotos = (req, res, next) => {
     // get photos from the album id and albums collection
     firestore.collection("albums").doc(albumId).get()
       .then(albumSnap => {
-        return new Promise((resolve, reject) => {
-          albumSnap.data().photos.forEach(image => {
-            albumImageObj = {
-              image: image,
-              _id: '_' + Math.random().toString(36).substr(2, 9)
-            }
-            imageArray.push(albumImageObj)
-          })
-          resolve(imageArray)
-        })
-          .then(arr => {
-            res.status(200).json({ message: "User photos fetched from album", images: arr })
-          })
-          .catch(err => console.log("Could not create album image object ", err))
+        res.status(200).json({ message: "User photos fetched from album", images: albumSnap.data().photos })
       })
       .catch(err => console.log("Cannot get photos from the album ", err))
   }
@@ -91,7 +78,7 @@ exports.storePhoto = (req, res, next) => {
           } else {
             console.log("STORE PHOTO ALBUM ID FOUND: ", albumId)
             firestore.collection("albums").doc(albumId).update({
-              photos: firebase.firestore.FieldValue.arrayUnion({ image: image.image, id: image.id })
+              photos: firebase.firestore.FieldValue.arrayUnion({ image: image.image, _id: image.id })
             })
             res.status(200).json({
               message: "Photo inserted in album",
@@ -115,6 +102,7 @@ exports.deletePhoto = (req, res, next) => {
   let firestore = firebase.firestore();
   let userDocRef = firestore.collection("users").doc(userId)
   userDocRef.update({ photos: firebase.firestore.FieldValue.arrayRemove(photoId) })
+  console.log("DELETED PHOTO FROM USER")
   firestore.collection('photos').doc(photoId).get()
     .then(snap => {
       res.json({ message: "User deleted", path: snap.data().filepath })

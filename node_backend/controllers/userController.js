@@ -1,4 +1,5 @@
 const firebase = require("firebase");
+const albumSecretDocID = require("../secrets").secret_id_for_albums_arr;
 
 exports.createRoom = (req, res, next) => {
   // TODO: user can only have one album as of now, logic: if the user already as an album id associated with them, then they
@@ -7,7 +8,7 @@ exports.createRoom = (req, res, next) => {
   let name = req.body.name;
   let firestore = firebase.firestore();
   let userDocRef = firestore.collection("users").doc(userId)
-
+  let albumIdsRef = firestore.collection("albums_ids").doc(albumSecretDocID);
   userDocRef.get()
     .then(snap => {
       // if the album field comes as undefined that means the album field does not exist and thus the user has never created one
@@ -16,9 +17,13 @@ exports.createRoom = (req, res, next) => {
         firestore.collection("albums").add({
           roomName: name + "'s room",
           // the user is added as an admin in an admins array
-          admins: firebase.firestore.FieldValue.arrayUnion(userId)
+          admins: firebase.firestore.FieldValue.arrayUnion(userId),
+          photos: firebase.firestore.FieldValue.arrayUnion({})
         })
           .then(albumRef => {
+            albumIdsRef.update({
+              ids: firebase.firestore.FieldValue.arrayUnion(albumRef.id)
+            })
             // using update because we are just updating the document using set just resets the entire doc and only puts the album id
             userDocRef.update({ album: albumRef.id })
             res.status(200).json({ message: "Album created", refLink: "http://localhost:3000/" + albumRef.id })

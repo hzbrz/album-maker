@@ -30,6 +30,7 @@ exports.login = (req, res, next) => {
   const profile_pic = req.body.profile_image
   // album_id represent the last part of the invitation link and is used to check if the user should be created normally or not
   const album_id = req.body.albumId
+  console.log("ALBUM ID ", album_id)
 
   // using firestore to find the user with email math and if not found then user gets created
   let firestore = firebase.firestore();
@@ -115,6 +116,7 @@ exports.login = (req, res, next) => {
           // put user as a part of album in the photos collection
           firestore.collection("albums").get()
             .then(snap => {
+              console.log(snap.metadata)
               snap.forEach(data => {
                 if (data.id == album_id) {
                   console.log("Album id matched")
