@@ -10,6 +10,6 @@ router.post("/photos", isAuth, photoController.getUserPhotos);
 router.post("/photo", isAuth, photoController.storePhoto);
 
 // delete requires an Id becasue the delete method does not take a body during the request from client
-router.delete("/photo/:photoId", isAuth, photoController.deletePhoto)
+router.delete("/photo/:photoId?", isAuth, photoController.deletePhoto)
 
 module.exports = router;

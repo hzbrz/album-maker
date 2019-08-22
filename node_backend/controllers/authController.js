@@ -1,6 +1,7 @@
 const firebase = require("firebase");
 const jwt = require("jsonwebtoken");
 const jwt_secret = require("../secrets").jwt.secret;
+const albumIdArrSecret = require("../secrets").secret_id_for_albums_arr;
 
 exports.getUser = (req, res, next) => {
   // vars to store pulled things from db
@@ -30,7 +31,6 @@ exports.login = (req, res, next) => {
   const profile_pic = req.body.profile_image
   // album_id represent the last part of the invitation link and is used to check if the user should be created normally or not
   const album_id = req.body.albumId
-  console.log("ALBUM ID ", album_id)
 
   // using firestore to find the user with email math and if not found then user gets created
   let firestore = firebase.firestore();
@@ -68,26 +68,23 @@ exports.login = (req, res, next) => {
                   res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: null })
                 } else {
                   // put user as a part of album in the photos collection
-                  firestore.collection("albums").get()
+                  firestore.collection("albums_ids").doc(albumIdArrSecret).get()
                     .then(snap => {
-                      snap.forEach(data => {
-                        // checking of there is acutally an album with the same id to cerify if the room exists
-                        if (data.id == album_id) {
-                          console.log("Album id matched!")
-                          // then setting
-                          firestore.collection("users").doc(userRef.id).update({
-                            albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(album_id)
-                          })
-                          // sending resposne with the albumId for client side operations
-                          res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: album_id })
-                        } else {
-                          // if the albumId does not match any of the rooms that in the db then
-                          console.log("Album id was not matched with anything in db albums")
-                          res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: null })
-                        }
-                      })
+                      if (snap.data().ids.includes(album_id)) {
+                        console.log("Album id found in the array, this room exists!")
+                        // then setting
+                        firestore.collection("users").doc(userRef.id).update({
+                          albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(album_id)
+                        })
+                        // sending resposne with the albumId for client side operations
+                        res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: album_id })
+                      } else {
+                        // if the albumId does not match any of the rooms that in the db then
+                        console.log("Album id was not matched with anything in db albums")
+                        res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: null })
+                      }
                     })
-                    .catch(err => console.log("Trouble while getting the albums collection ", err))
+                    .catch(err => console.log("Could not get the album/room ids ", err))
                 }
               })
               .catch(err => console.log("Could not get data for token ", err))
@@ -114,23 +111,23 @@ exports.login = (req, res, next) => {
           res.status(200).json({ message: "User found", userId: id, token: token, albumId: null })
         } else {
           // put user as a part of album in the photos collection
-          firestore.collection("albums").get()
+          firestore.collection("albums_ids").doc(albumIdArrSecret).get()
             .then(snap => {
-              console.log(snap.metadata)
-              snap.forEach(data => {
-                if (data.id == album_id) {
-                  console.log("Album id matched")
-                  firestore.collection("users").doc(id).update({
-                    albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(album_id)
-                  })
-                  res.status(200).json({ message: "User found", userId: id, token: token, albumId: album_id })
-                } else {
-                  console.log("Album id was not matched with anything in db albums")
-                  res.status(200).json({ message: "User found", userId: id, token: token, albumId: null })
-                }
-              })
+              if (snap.data().ids.includes(album_id)) {
+                console.log("Album id found in the array, this room exists!")
+                // then setting
+                firestore.collection("users").doc(id).update({
+                  albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(album_id)
+                })
+                // sending resposne with the albumId for client side operations
+                res.status(200).json({ message: "User found", userId: id, token: token, albumId: album_id })
+              } else {
+                // if the albumId does not match any of the rooms that in the db then
+                console.log("Album id was not matched with anything in db albums")
+                res.status(200).json({ message: "User found", userId: id, token: token, albumId: null })
+              }
             })
-            .catch(err => console.log("Trouble while getting the albums collection ", err))
+            .catch(err => console.log("Could not get the album/room ids ", err))
         }
       }
     })

@@ -18,9 +18,9 @@ exports.createRoom = (req, res, next) => {
           roomName: name + "'s room",
           // the user is added as an admin in an admins array
           admins: firebase.firestore.FieldValue.arrayUnion(userId),
-          photos: firebase.firestore.FieldValue.arrayUnion({})
         })
           .then(albumRef => {
+            // putting the room id into an arr in db so I can check it for the user inv link being valid
             albumIdsRef.update({
               ids: firebase.firestore.FieldValue.arrayUnion(albumRef.id)
             })

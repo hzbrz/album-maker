@@ -95,14 +95,22 @@ exports.storePhoto = (req, res, next) => {
 exports.deletePhoto = (req, res, next) => {
   // reading the id from the parameter of the request
   const photoId = req.params.photoId;
-  console.log(photoId)
   let userId = req.userId;
   let albumId = req.albumId;
-  console.log(albumId)
+  const url = req.originalUrl.split("?image=")[1];
   let firestore = firebase.firestore();
   let userDocRef = firestore.collection("users").doc(userId)
+  let imageObj = {
+    _id: photoId, image: url
+  }
   userDocRef.update({ photos: firebase.firestore.FieldValue.arrayRemove(photoId) })
-  console.log("DELETED PHOTO FROM USER")
+
+  if (albumId != null) {
+    firestore.collection("albums").doc(albumId).update({
+      photos: firebase.firestore.FieldValue.arrayRemove(imageObj)
+    })
+  }
+
   firestore.collection('photos').doc(photoId).get()
     .then(snap => {
       res.json({ message: "User deleted", path: snap.data().filepath })
