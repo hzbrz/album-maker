@@ -23,11 +23,11 @@ class Photo extends Component {
     firebase.auth().signOut()
     localStorage.setItem("isSignedIn", false)
     console.log("Signed out")
-    this.nextPath("/")
+    this.props.history.push("/")
   }
 
   ifNotLoggedInGoBack = () => {
-    this.nextPath("/")
+    this.props.history.push("/")
   }
 
   goToPhotosFeed = () => {
@@ -89,7 +89,8 @@ class Photo extends Component {
             // this is the request body that will be passed into the server 
             body: JSON.stringify({
               imageUrl: url,
-              filepath: snap.metadata.fullPath
+              filepath: snap.metadata.fullPath,
+              albumId: this.props.location.state.albumId
             })
           })
             .then(res => {

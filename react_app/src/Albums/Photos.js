@@ -46,13 +46,14 @@ class Photos extends Component {
       })
       .then(resData => {
         console.log(resData);
-        this.setState({ images: resData.images })
+        // set state to the images arr or empty arr if there is no array in the albums coll
+        this.setState({ images: resData.images || [] })
       })
       .catch(err => console.log(err))
   }
 
-  deletePost = (photoId) => {
-    fetch("http://localhost:8080/album/photo/" + photoId, {
+  deletePost = (photoId, image) => {
+    fetch("http://localhost:8080/album/photo/" + photoId + "/?image=" + image, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${this.state.token}`
@@ -77,7 +78,7 @@ class Photos extends Component {
       .catch(err => console.log("ERROR while deleting data ", err))
   }
 
-  ifNotLoggedInGoBack = () => {
+  takePhoto = () => {
     this.props.history.push("/photo", {
       albumId: this.props.location.state.albumId
     })
@@ -86,13 +87,13 @@ class Photos extends Component {
   render() {
     return (
       <div>
-        <h1>This is the photos page</h1>&nbsp; <button onClick={this.ifNotLoggedInGoBack}>Take a photo?</button>
+        <h1>This is the photos page</h1>&nbsp; <button onClick={this.takePhoto}>Take a photo?</button>
         <div style={this.imageContainer}>
           <ul style={this.ulStyle}>
             {this.state.images.map((item) => (
               <li style={this.liStyle} key={item._id}>
                 <img style={this.imgStyle} src={item.image} alt="user" />
-                <button onClick={this.deletePost.bind(this, item._id)}>Delete photo</button>
+                <button onClick={this.deletePost.bind(this, item._id, item.image)}>Delete photo</button>
               </li>
             ))}
           </ul>
