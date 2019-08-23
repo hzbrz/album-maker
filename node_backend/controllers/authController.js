@@ -77,11 +77,11 @@ exports.login = (req, res, next) => {
                           albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(album_id)
                         })
                         // sending resposne with the albumId for client side operations
-                        res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: album_id })
+                        res.status(200).json({ message: "User found", userId: userRef.id, token: token, albumId: album_id })
                       } else {
                         // if the albumId does not match any of the rooms that in the db then
                         console.log("Album id was not matched with anything in db albums")
-                        res.status(200).json({ message: "User found", userId: snap.id, token: token, albumId: null })
+                        res.status(200).json({ message: "User found", userId: userRef.id, token: token, albumId: null })
                       }
                     })
                     .catch(err => console.log("Could not get the album/room ids ", err))

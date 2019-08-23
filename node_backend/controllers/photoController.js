@@ -16,7 +16,8 @@ exports.getUserPhotos = (req, res, next) => {
           snap.forEach(image => {
             let imageObj = {
               image: image.data().image,
-              _id: image.id
+              _id: image.id,
+              filepath: ""
             }
             imageArray.push(imageObj)
           })
@@ -58,7 +59,7 @@ exports.storePhoto = (req, res, next) => {
       // getting references to send the response to the client
       photoRef.get()
         .then(snap => {
-          // TODO: store image as blob then store in db and then get photo from db to client
+          // store image as blob then store in db and then get photo from db to client
           return { image: snap.data().image, id: photoRef.id }
         })
         // promise handling the image that was returned
@@ -78,7 +79,7 @@ exports.storePhoto = (req, res, next) => {
           } else {
             console.log("STORE PHOTO ALBUM ID FOUND: ", albumId)
             firestore.collection("albums").doc(albumId).update({
-              photos: firebase.firestore.FieldValue.arrayUnion({ image: image.image, _id: image.id })
+              photos: firebase.firestore.FieldValue.arrayUnion({ image: image.image, _id: image.id, filepath: path })
             })
             res.status(200).json({
               message: "Photo inserted in album",
@@ -97,24 +98,36 @@ exports.deletePhoto = (req, res, next) => {
   const photoId = req.params.photoId;
   let userId = req.userId;
   let albumId = req.albumId;
-  const url = req.originalUrl.split("?image=")[1];
+  let image = req.originalUrl.split("?image=")[1];
+  let storage = image.split("/?filepath=");
+  const imageUrl = storage[0].trim();
+  const filepath = storage[1].replace("%20", " ");
   let firestore = firebase.firestore();
   let userDocRef = firestore.collection("users").doc(userId)
   let imageObj = {
-    _id: photoId, image: url
+    _id: photoId, filepath: filepath, image: imageUrl
   }
-  userDocRef.update({ photos: firebase.firestore.FieldValue.arrayRemove(photoId) })
 
-  if (albumId != null) {
+  if (!albumId) {
+    console.log("albumID is not found")
+    userDocRef.update({ photos: firebase.firestore.FieldValue.arrayRemove(photoId) })
+    firestore.collection('photos').doc(photoId).get()
+      .then(snap => {
+        res.json({ message: "User deleted", path: snap.data().filepath })
+        firestore.collection('photos').doc(photoId).delete();
+      })
+      .catch(err => console.log("ERROR while getting photo from db ", err))
+  } else {
     firestore.collection("albums").doc(albumId).update({
       photos: firebase.firestore.FieldValue.arrayRemove(imageObj)
     })
+    res.json({ message: "User deleted", path: null })
+    // userDocRef.update({ photos: firebase.firestore.FieldValue.arrayRemove(photoId) })
+    // firestore.collection('photos').doc(photoId).get()
+    //   .then(snap => {
+    //     res.json({ message: "User deleted", path: null })
+    //     firestore.collection('photos').doc(photoId).delete();
+    //   })
+    //   .catch(err => console.log("ERROR while getting photo from db ", err))
   }
-
-  firestore.collection('photos').doc(photoId).get()
-    .then(snap => {
-      res.json({ message: "User deleted", path: snap.data().filepath })
-      firestore.collection('photos').doc(photoId).delete();
-    })
-    .catch(err => console.log("ERROR while getting photo from db ", err))
 }
