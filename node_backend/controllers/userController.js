@@ -25,7 +25,10 @@ exports.createRoom = (req, res, next) => {
               ids: firebase.firestore.FieldValue.arrayUnion(albumRef.id)
             })
             // using update because we are just updating the document using set just resets the entire doc and only puts the album id
-            userDocRef.update({ album: albumRef.id })
+            userDocRef.update({ 
+              album: albumRef.id, 
+              albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(albumRef.id)
+            })
             res.status(200).json({ message: "Album created", refLink: "http://localhost:3000/" + albumRef.id })
           })
           .catch(err => console.log("could not create an album room ", err))

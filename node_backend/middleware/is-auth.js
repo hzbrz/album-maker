@@ -18,7 +18,6 @@ module.exports = (req, res, next) => {
   }
   // storing the userId from db that we passed into the token while signing into the request so I can access later
   req.userId = decodedToken.userId;
-  req.albumId = decodedToken.albumId;
 
   // moving onto next middleware
   next();

@@ -1,5 +1,36 @@
 const firebase = require("firebase");
 
+exports.getUserAlbums = (req, res, next) => {
+  const userId = req.userId;
+  let firestore = firebase.firestore();
+  let albumColl = firestore.collection("albums")
+  let albumsArray = []
+  firestore.collection("users").doc(userId).get()
+  .then(snap => {
+    return new Promise((resolve, reject) => {
+      snap.data().albumUserPartOf.forEach(albumId => {
+        albumColl.doc(albumId).get()
+        .then(snap => {
+          console.log(snap.data())
+          let albumObj = {
+            name: snap.data().roomName,
+            id: albumId
+          }
+          albumsArray.push(albumObj)
+          resolve(albumsArray)
+        })
+        .catch(err => console.log("Could not get the albums collection ", err))
+      })
+    })
+    .then(albumsArr => {
+      console.log(albumsArr)
+      res.status(200).json({ message: "Albums fetched", albums: albumsArr})
+    })
+    .catch(err => console.log("Promise resolve failed, could not get the albums ", err))
+  })
+  .catch(err => console.log("Could not fetch the user for albums ", err))
+}
+
 exports.getUserPhotos = (req, res, next) => {
   // if album id exists then get album photos, else just get user photos
   const albumId = req.body.albumId;

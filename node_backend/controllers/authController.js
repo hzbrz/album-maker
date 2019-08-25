@@ -59,7 +59,6 @@ exports.login = (req, res, next) => {
                 token = jwt.sign({
                   email: snap.data().email,
                   userId: snap.id,
-                  albumId: album_id
                 }, jwt_secret)
                 // checking here if an invitation link was hit in the frontend
                 if (!album_id) {
@@ -101,8 +100,7 @@ exports.login = (req, res, next) => {
           // creating JWT token
           token = jwt.sign({
             email: snap.data().email,
-            userId: snap.id,
-            albumId: album_id
+            userId: snap.id
           }, jwt_secret)
         })
         // checking here if an invitation link was hit in the frontend

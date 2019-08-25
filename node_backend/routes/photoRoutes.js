@@ -5,6 +5,8 @@ const router = express.Router();
 const isAuth = require('../middleware/is-auth');
 const photoController = require("../controllers/photoController");
 
+router.get("/albums", isAuth, photoController.getUserAlbums);
+
 router.post("/photos", isAuth, photoController.getUserPhotos);
 
 router.post("/photo", isAuth, photoController.storePhoto);
