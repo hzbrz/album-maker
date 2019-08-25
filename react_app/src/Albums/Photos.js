@@ -25,14 +25,14 @@ class Photos extends Component {
 
 
   componentDidMount = () => {
-    console.log(this.props.location.state.albumId)
+    console.log("Album ID: ", this.props.location.state.albumId)
 
     fetch("http://localhost:8080/album/photos", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${this.state.token}`
-      }, 
+      },
       body: JSON.stringify({
         albumId: this.props.location.state.albumId
       })
@@ -52,8 +52,8 @@ class Photos extends Component {
       .catch(err => console.log(err))
   }
 
-  deletePost = (photoId, image) => {
-    fetch("http://localhost:8080/album/photo/" + photoId + "/?image=" + image, {
+  deletePost = (photoId, image, storagePath) => {
+    fetch("http://localhost:8080/album/photo/" + photoId + "/?image=" + image + "/?filepath=" + storagePath, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${this.state.token}`
@@ -68,12 +68,16 @@ class Photos extends Component {
       })
       .then(resData => {
         console.log("Photo deleted ", resData)
-        let photoStorageref = firebase.storage().ref(resData.path);
-        photoStorageref.delete()
-          .then(result => {
-            console.log("PHOTO DELETED FROM STORAGE ".toLowerCase())
-          })
-          .catch(err => console.log("ERROR WHILE DELETING FROM STORAGE ", err))
+        if (!resData.path) {
+          console.log("Photo only deleted from album profile")
+        } else {
+          let photoStorageref = firebase.storage().ref(resData.path);
+          photoStorageref.delete()
+            .then(result => {
+              console.log("PHOTO DELETED FROM STORAGE ".toLowerCase())
+            })
+            .catch(err => console.log("ERROR WHILE DELETING FROM STORAGE ", err))
+        }
       })
       .catch(err => console.log("ERROR while deleting data ", err))
   }
@@ -93,7 +97,7 @@ class Photos extends Component {
             {this.state.images.map((item) => (
               <li style={this.liStyle} key={item._id}>
                 <img style={this.imgStyle} src={item.image} alt="user" />
-                <button onClick={this.deletePost.bind(this, item._id, item.image)}>Delete photo</button>
+                <button onClick={this.deletePost.bind(this, item._id, item.image, item.filepath)}>Delete photo</button>
               </li>
             ))}
           </ul>

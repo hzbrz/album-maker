@@ -4,6 +4,7 @@ import Login from "./Auth/Login";
 import User from "./Auth/User";
 import Photo from "./Albums/Photo";
 import Photos from "./Albums/Photos";
+import Albums from "./Albums/Albums";
 import Referral from "./Component/Referral";
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import * as firebase from 'firebase';
@@ -20,6 +21,7 @@ function App() {
           <Route path='/user' component={User} />
           <Route path='/photo' component={Photo} />
           <Route path='/photos' component={Photos} />
+          <Route path='/albums' component={Albums} />
           <Route component={Referral} />
         </Switch>
       </div>
