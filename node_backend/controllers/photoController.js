@@ -6,27 +6,27 @@ exports.getUserAlbums = (req, res, next) => {
   let albumColl = firestore.collection("albums")
   let albumsArray = []
   firestore.collection("users").doc(userId).get()
-  .then(snap => {
-    return new Promise((resolve, reject) => {
-      snap.data().albumUserPartOf.forEach(albumId => {
-        albumColl.doc(albumId).get()
-        .then(snap => {
-          let albumObj = {
-            name: snap.data().roomName,
-            id: albumId
-          }
-          albumsArray.push(albumObj)
-          resolve(albumsArray)
+    .then(snap => {
+      return new Promise((resolve, reject) => {
+        snap.data().albumUserPartOf.forEach(albumId => {
+          albumColl.doc(albumId).get()
+            .then(snap => {
+              let albumObj = {
+                name: snap.data().roomName,
+                id: albumId
+              }
+              albumsArray.push(albumObj)
+              resolve(albumsArray)
+            })
+            .catch(err => console.log("Could not get the albums collection ", err))
         })
-        .catch(err => console.log("Could not get the albums collection ", err))
       })
+        .then(albumsArr => {
+          res.status(200).json({ message: "Albums fetched", albums: albumsArr })
+        })
+        .catch(err => console.log("Promise resolve failed, could not get the albums ", err))
     })
-    .then(albumsArr => {
-      res.status(200).json({ message: "Albums fetched", albums: albumsArr})
-    })
-    .catch(err => console.log("Promise resolve failed, could not get the albums ", err))
-  })
-  .catch(err => console.log("Could not fetch the user for albums ", err))
+    .catch(err => console.log("Could not fetch the user for albums ", err))
 }
 
 exports.getUserPhotos = (req, res, next) => {
@@ -35,38 +35,43 @@ exports.getUserPhotos = (req, res, next) => {
   let userId = req.userId;
   let imageArray = [];
   let firestore = firebase.firestore();
+  let userColl = firestore.collection("users")
   // if the user is not using a referral link
   if (!albumId) {
     console.log("User is not part of an album ", albumId)
     // if there is not inv link then just create photo normally and set it to part of the user profile in db
-    firestore.collection('photos').where("creator", "==", userId).get()
-      .then(snap => {
-        return new Promise((resolve, reject) => {
-          snap.forEach(image => {
-            let imageObj = {
-              image: image.data().image,
-              _id: image.id,
-              filepath: ""
-            }
-            imageArray.push(imageObj)
-          })
-          resolve(imageArray);
-        })
-          .then(imageArr => {
-            res.status(200).json({ message: "User photos fetched from profile", images: imageArr })
-          })
-          .catch(err => console.log("ERROR cant find pictures "))
-      })
-      .catch(err => console.log("ERROR while getting photos ", err.message))
+    res.status(200).json({ message: "User did not select an album", images: [] })
     // else if the user signs in with an inviation/referral link
   } else {
-    console.log("User used a referral link to sign in ", albumId)
+    console.log("User clicked on an album before coming to Photos component ", albumId)
     // get photos from the album id and albums collection
     firestore.collection("albums").doc(albumId).get()
-      .then(albumSnap => {
-        res.status(200).json({ message: "User photos fetched from album", images: albumSnap.data().photos })
+      .then(snap => {
+        return new Promise((resolve, reject) => {
+          snap.data().photos.forEach(photo => {
+            firestore.collection("photos").doc(photo.photoId).get()
+            .then(snap => {
+              userColl.doc(snap.data().creator).get()
+              .then(creator => {
+                let imageObj = {
+                  _id: photo.photoId,
+                  image: snap.data().image,
+                  creator: creator.data().name
+                }
+                imageArray.push(imageObj)
+                resolve(imageArray)
+              })
+              .catch(err => console.log("Cannot get the user object from db ", err))
+            })
+            .catch(err => console.log("cannot get the photo collection ", err))
+          })
+        })
+        .then(imageArr => {
+          res.status(200).json({ message: "Image array fetched", images: imageArr })
+        })
+        .catch(err => console.log("Cannot resolve the promise and get the array of photos ", err))
       })
-      .catch(err => console.log("Cannot get photos from the album ", err))
+      .catch(err => console.log("Cannot get the albums from the db ", err))
   }
 }
 
@@ -94,21 +99,18 @@ exports.storePhoto = (req, res, next) => {
         // promise handling the image that was returned
         .then(image => {
           if (!albumId) {
-            console.log("STORE PHOTO NO ALBUM ID")
-            userObjectFromDb.get()
-              .then(snap => {
-                // sending the photo to the db under photos collection
-                res.status(200).json({
-                  message: "Photo inserted",
-                  photoUrl: image.image,
-                  creator: { _id: snap.id, name: snap.data().name }
-                })
-              })
-              .catch(err => console.log("could not get user object from db ", err))
+            console.log("CANNOT STORE PHOTO, NO ALBUM ID")
+            // the picture does get taken and stored in db, but since album is found to store it to
+            // I delete it both from the photos collection and the photos array in user coll
+            firestore.collection("photos").doc(image.id).delete();
+            userObjectFromDb.update({ photos: firebase.firestore.FieldValue.arrayRemove(image.id) })
+
+            res.status(200).json({ message: "Photo cannot be inserted because no album was selected" })
           } else {
             console.log("STORE PHOTO ALBUM ID FOUND: ", albumId)
             firestore.collection("albums").doc(albumId).update({
-              photos: firebase.firestore.FieldValue.arrayUnion({ image: image.image, _id: image.id, filepath: path })
+              // only storing the ref to the photo
+              photos: firebase.firestore.FieldValue.arrayUnion({ photoId: image.id })
             })
             res.status(200).json({
               message: "Photo inserted in album",
