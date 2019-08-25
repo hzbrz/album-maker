@@ -11,7 +11,6 @@ exports.getUserAlbums = (req, res, next) => {
       snap.data().albumUserPartOf.forEach(albumId => {
         albumColl.doc(albumId).get()
         .then(snap => {
-          console.log(snap.data())
           let albumObj = {
             name: snap.data().roomName,
             id: albumId
@@ -23,7 +22,6 @@ exports.getUserAlbums = (req, res, next) => {
       })
     })
     .then(albumsArr => {
-      console.log(albumsArr)
       res.status(200).json({ message: "Albums fetched", albums: albumsArr})
     })
     .catch(err => console.log("Promise resolve failed, could not get the albums ", err))
