@@ -16,6 +16,16 @@ class Photo extends Component {
       image: {
         value: ""
       }
+    },
+    albumId: null
+  }
+
+  componentDidMount() {
+    // this is used to check if the user has specified an album
+    if (typeof this.props.location.state == "undefined") {
+      this.setState({ albumId: null })
+    } else {
+      this.setState({ albumId: this.props.location.state.albumId })
     }
   }
 
@@ -31,7 +41,7 @@ class Photo extends Component {
   }
 
   goToPhotosFeed = () => {
-    this.props.history.push("/photos", { albumId: this.props.location.state.albumId });
+    this.props.history.push("/photos", { albumId: this.state.albumId });
   }
 
   changeHandler = event => {
@@ -73,41 +83,48 @@ class Photo extends Component {
     let dataView = new DataView(arrayBuffer);
     // create blob and store in firebase storage
     let blob = new Blob([dataView], { type: mimeString });
-    // using the put method to store the blob
-    storageRef.put(blob)
-      .then(snap => {
-        // getting the downloadUrl from the storage after storing
-        snap.ref.getDownloadURL().then(url => {
-          console.log("File available at: ", url)
-          // sending a post request with the download URL so I can store in db from API
-          fetch("http://localhost:8080/album/photo", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${this.state.token}`
-            },
-            // this is the request body that will be passed into the server 
-            body: JSON.stringify({
-              imageUrl: url,
-              filepath: snap.metadata.fullPath,
-              albumId: this.props.location.state.albumId
+    // using the put method to store the blob depending if there is an album specified to store the pic
+    if (!this.state.albumId) {
+      // if no album is specified then the photo is never stored
+      console.log("Photo cannot be inserted, because no album specified")
+      this.setState({ photoInserted: true })
+    } else {
+      // album was specified store in storage and in db
+      storageRef.put(blob)
+        .then(snap => {
+          // getting the downloadUrl from the storage after storing
+          snap.ref.getDownloadURL().then(url => {
+            console.log("File available at: ", url)
+            // sending a post request with the download URL so I can store in db from API
+            fetch("http://localhost:8080/album/photo", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.state.token}`
+              },
+              // this is the request body that will be passed into the server 
+              body: JSON.stringify({
+                imageUrl: url,
+                filepath: snap.metadata.fullPath,
+                albumId: this.state.albumId
+              })
             })
-          })
-            .then(res => {
-              if (res.status !== 200) {
-                console.error("could not fetch the photos");
-              }
+              .then(res => {
+                if (res.status !== 200) {
+                  console.error("could not fetch the photos");
+                }
 
-              return res.json()
-            })
-            .then(resData => {
-              console.log("Photo inserted ", resData);
-              this.setState({ photoInserted: true })
-            })
-            .catch(err => console.log(err))
+                return res.json()
+              })
+              .then(resData => {
+                console.log("Photo inserted ", resData);
+                this.setState({ photoInserted: true })
+              })
+              .catch(err => console.log(err))
+          })
         })
-      })
-      .catch(err => console.log("ERROR while uploading photo ", err))
+        .catch(err => console.log("ERROR while uploading photo ", err))
+    }
   }
 
   render() {

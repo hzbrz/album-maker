@@ -17,16 +17,29 @@ class Photos extends Component {
     paddingnBottom: "90px",
   }
 
-  state = {
-    isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
-    token: localStorage.getItem("token"),
-    images: []
+  constructor(props) {
+    super(props)
+    // need this to set the initial state based on if the user clicked on an album to get to this component
+    if (typeof props.location.state == "undefined") {
+      this.state = {
+        isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
+        token: localStorage.getItem("token"),
+        images: [],
+        albumId: null
+      }
+    } else {
+      this.state = {
+        isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
+        token: localStorage.getItem("token"),
+        images: [],
+        albumId: props.location.state.albumId
+      }
+    }
   }
 
 
   componentDidMount = () => {
-    console.log("Album ID: ", this.props.location.state.albumId)
-
+    console.log(this.state.albumId)
     fetch("http://localhost:8080/album/photos", {
       method: "POST",
       headers: {
@@ -34,7 +47,7 @@ class Photos extends Component {
         "Authorization": `Bearer ${this.state.token}`
       },
       body: JSON.stringify({
-        albumId: this.props.location.state.albumId
+        albumId: this.state.albumId
       })
     })
       .then(res => {
@@ -84,11 +97,23 @@ class Photos extends Component {
 
   takePhoto = () => {
     this.props.history.push("/photo", {
-      albumId: this.props.location.state.albumId
+      albumId: this.state.albumId
     })
   }
 
+  goToAlbums = () => {
+    this.props.history.push("/albums");
+  }
+
   render() {
+    if (!this.state.albumId) {
+      return (
+        <div>
+          <h4>Please select an album</h4>
+          <button onClick={this.goToAlbums}>Go to Albums Page</button>
+        </div>
+      )
+    }
     return (
       <div>
         <h1>This is the photos page</h1>&nbsp; <button onClick={this.takePhoto}>Take a photo?</button>
