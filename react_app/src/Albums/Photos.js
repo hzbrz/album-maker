@@ -25,21 +25,27 @@ class Photos extends Component {
         isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
         token: localStorage.getItem("token"),
         images: [],
-        albumId: null
+        albumId: null,
+        loading: true
       }
     } else {
       this.state = {
         isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
         token: localStorage.getItem("token"),
         images: [],
-        albumId: props.location.state.albumId
+        albumId: props.location.state.albumId,
+        loading: true
       }
     }
   }
 
-
+  // TODO: for data fetching optimization I can add a caching that checks for an increase in the number of images 
+  // and only fetches photos if there is an increase, this can also be done by comparing timestamps in the db/api
   componentDidMount = () => {
-    console.log(this.state.albumId)
+    this.getPhotos();
+  }
+
+  getPhotos = () => {
     fetch("http://localhost:8080/album/photos", {
       method: "POST",
       headers: {
@@ -60,13 +66,13 @@ class Photos extends Component {
       .then(resData => {
         console.log(resData);
         // set state to the images arr or empty arr if there is no array in the albums coll
-        this.setState({ images: resData.images || [] })
+        this.setState({ images: resData.images || [], loading: false })
       })
       .catch(err => console.log(err))
   }
 
-  deletePost = (photoId, image, storagePath) => {
-    fetch("http://localhost:8080/album/photo/" + photoId + "/?image=" + image + "/?filepath=" + storagePath, {
+  deletePost = (photoId, albumId, userId) => {
+    fetch("http://localhost:8080/album/photo/" + photoId + "/" + albumId + "/" + userId, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${this.state.token}`
@@ -80,9 +86,9 @@ class Photos extends Component {
         return res.json()
       })
       .then(resData => {
-        console.log("Photo deleted ", resData)
+        console.log(resData)
         if (!resData.path) {
-          console.log("Photo only deleted from album profile")
+          console.log("User did not create photo")
         } else {
           let photoStorageref = firebase.storage().ref(resData.path);
           photoStorageref.delete()
@@ -117,16 +123,18 @@ class Photos extends Component {
     return (
       <div>
         <h1>This is the photos page</h1>&nbsp; <button onClick={this.takePhoto}>Take a photo?</button>
-        <div style={this.imageContainer}>
-          <ul style={this.ulStyle}>
-            {this.state.images.map((item) => (
-              <li style={this.liStyle} key={item._id}>
-                <img style={this.imgStyle} src={item.image} alt="user" />
-                <button onClick={this.deletePost.bind(this, item._id, item.image, item.filepath)}>Delete photo</button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {this.state.loading ? <h3>Loading....</h3> :
+          <div style={this.imageContainer}>
+            <ul style={this.ulStyle}>
+              {this.state.images.map((item) => (
+                <li style={this.liStyle} key={item._id}>
+                  <img style={this.imgStyle} src={item.image} alt={item.creator} />
+                  <button onClick={this.deletePost.bind(this, item._id, this.state.albumId, item.userId)}>Delete photo</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        }
       </div>
     )
   }

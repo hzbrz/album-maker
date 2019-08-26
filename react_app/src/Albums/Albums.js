@@ -14,28 +14,38 @@ class Albums extends Component {
 
   state = {
     token: localStorage.getItem("token"),
-    albums: []
+    albums: [],
+    isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false
   }
 
   componentDidMount = () => {
-    fetch("http://localhost:8080/album/albums", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${this.state.token}`
-      }
-    })
-      .then(res => {
-        if (res.status !== 200) {
-          console.error("could not fetch the user's albums");
+    // if signed in fetch the album if not dont even do anything
+    if(this.state.isSignedIn) {
+      fetch("http://localhost:8080/album/albums", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${this.state.token}`
         }
+      })
+        .then(res => {
+          if (res.status !== 200) {
+            console.error("could not fetch the user's albums");
+          }
+  
+          return res.json()
+        })
+        .then(resData => {
+          console.log("Albums fetched ", resData);
+          this.setState({ albums: resData.albums })
+        })
+        .catch(err => console.log(err))
+    } else {
+      console.log("Cannot get albums, user not signed in")
+    }
+  }
 
-        return res.json()
-      })
-      .then(resData => {
-        console.log("Albums fetched ", resData);
-        this.setState({ albums: resData.albums })
-      })
-      .catch(err => console.log(err))
+  ifNotLoggedInGoBack = () => {
+    this.props.history.push("/");
   }
 
   goToPhotos = (albumId) => {
@@ -45,6 +55,15 @@ class Albums extends Component {
   } 
 
   render() {
+    if (this.state.isSignedIn === false) {
+      return (
+        <div>
+          <h1>Album creator</h1>
+          <p>You are not logged in</p>
+          <button onClick={this.ifNotLoggedInGoBack}>Go back?</button>
+        </div>
+      );
+    }
     return (
       <div style={this.imageContainer}>
         <ul style={this.ulStyle}>
