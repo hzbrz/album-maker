@@ -9,7 +9,16 @@ import Referral from "./Component/Referral";
 import Navbar from './Component/Navbar';
 import { BrowserRouter as Router, Route, Switch, withRouter } from 'react-router-dom';
 import * as firebase from 'firebase';
-import { firebaseConfig } from "./secrets";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA1xuAemcildff2sBobHd6sqZaDVUHkgXQ",
+  authDomain: "wedding-app-248623.firebaseapp.com",
+  databaseURL: "https://wedding-app-248623.firebaseio.com",
+  projectId: "wedding-app-248623",
+  storageBucket: "wedding-app-248623.appspot.com",
+  messagingSenderId: "851647299055",
+  appId: "1:851647299055:web:f367ab0c39724568"
+};
 
 firebase.initializeApp(firebaseConfig);
 
