@@ -20,7 +20,7 @@ class Albums extends Component {
 
   componentDidMount = () => {
     // if signed in fetch the album if not dont even do anything
-    if(this.state.isSignedIn) {
+    if (this.state.isSignedIn) {
       fetch("http://localhost:8080/album/albums", {
         method: "GET",
         headers: {
@@ -31,7 +31,7 @@ class Albums extends Component {
           if (res.status !== 200) {
             console.error("could not fetch the user's albums");
           }
-  
+
           return res.json()
         })
         .then(resData => {
@@ -52,7 +52,7 @@ class Albums extends Component {
     this.props.history.push("/photos", {
       albumId: albumId
     })
-  } 
+  }
 
   render() {
     if (this.state.isSignedIn === false) {
@@ -65,14 +65,16 @@ class Albums extends Component {
       );
     }
     return (
-      <div style={this.imageContainer}>
-        <ul style={this.ulStyle}>
-          {this.state.albums.map((album) => (
-            <li style={this.liStyle} key={album.id}>
-              <button onClick={this.goToPhotos.bind(this, album.id)}>{album.name}</button>
-            </li>
-          ))}
-        </ul>
+      <div>
+        <div style={this.imageContainer}>
+          <ul style={this.ulStyle}>
+            {this.state.albums.map((album) => (
+              <li style={this.liStyle} key={album.id}>
+                <button onClick={this.goToPhotos.bind(this, album.id)}>{album.name}</button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     )
   }

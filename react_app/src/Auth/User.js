@@ -113,7 +113,7 @@ class User extends Component {
         <button onClick={this.createRoom}>Create Room</button>
         <br />
         <br />
-        <button onClick={this.logout}>Sign-out</button>
+        {/* <button onClick={this.logout}>Sign-out</button> */}
       </div>
     );
   }

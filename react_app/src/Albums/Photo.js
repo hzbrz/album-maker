@@ -146,8 +146,8 @@ class Photo extends Component {
           <Camera
             onTakePhoto={(dataUri) => { this.uploadPhotos(dataUri); }}
           />
-          <p> Do you want to signout?</p>
-          <button onClick={this.logout}>Sign-out</button>
+          {/* <p> Do you want to signout?</p>
+          <button onClick={this.logout}>Sign-out</button> */}
         </div>
       </div>
     );
