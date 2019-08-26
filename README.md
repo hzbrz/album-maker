@@ -1,2 +1,1 @@
-# Wedding app Hasan Zahid
-### An app that lets people create albums at events
+### REACT FRONTEND FOR WEDDING APP
