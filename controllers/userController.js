@@ -35,7 +35,14 @@ exports.createRoom = (req, res, next) => {
       }
       // if album already exists then they cant anymore... for now(adv feature)
       else {
-        res.status(200).json({ message: "User already has created an album" })
+        userDocRef.get()
+        .then(snap => {
+          res.status(200).json({ 
+            message: "User already has created an album", 
+            refLink: "https://album-creator-hz.herokuapp.com/" + snap.data().album 
+          })
+        })
+        .catch(err => console.log("Cannot get user for the reflink ", err))
       }
     })
     .catch(err => console.log("Could not get the user to read the fields ", err))
