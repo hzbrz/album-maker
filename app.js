@@ -48,8 +48,7 @@ app.use("/auth", authRoutes);
 app.use("/album", photoRoutes);
 app.use("/setting", userRoutes);
 
-const port = 8080;
-
-app.listen(port, () => {
-  console.log("app is listening on port " + port)
+let server = app.listen(process.env.PORT || 8080, function () {
+  let port = server.address().port;
+  console.log("App now running on port", port);
 });
