@@ -12,20 +12,38 @@ class Albums extends Component {
     paddingnBottom: "90px",
   }
 
-  state = {
-    token: localStorage.getItem("token"),
-    albums: [],
-    isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false
+  constructor(props) {
+    super(props)
+    // need this to set the initial state based on if the user clicked on an album to get to this component
+    if (typeof props.location.state == "undefined") {
+      this.state = {
+        token: localStorage.getItem("token"),
+        albums: [],
+        isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
+        albumId: null,
+      }
+    } else {
+      this.state = {
+        token: localStorage.getItem("token"),
+        albums: [],
+        isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
+        albumId: props.location.state.albumId.split("/")[1],
+      }
+    }
   }
 
   componentDidMount = () => {
     // if signed in fetch the album if not dont even do anything
     if (this.state.isSignedIn) {
-      fetch("https://album-api-hz.herokuapp.com/album/albums", {
-        method: "GET",
+      fetch("http://localhost:8080/album/albums", {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "Authorization": `Bearer ${this.state.token}`
-        }
+        },
+        body: JSON.stringify({
+          albumId: this.state.albumId
+        })
       })
         .then(res => {
           if (res.status !== 200) {
