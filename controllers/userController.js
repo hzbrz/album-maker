@@ -29,7 +29,7 @@ exports.createRoom = (req, res, next) => {
               album: albumRef.id, 
               albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(albumRef.id)
             })
-            res.status(200).json({ message: "Album created", refLink: "http://localhost:3000/" + albumRef.id })
+            res.status(200).json({ message: "Album created", refLink: "https://album-creator-hz.herokuapp.com/" + albumRef.id })
           })
           .catch(err => console.log("could not create an album room ", err))
       }
