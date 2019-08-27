@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as firebase from 'firebase';
+import { withRouter } from 'react-router-dom';
 
 class Signout extends Component {
   
@@ -9,10 +10,11 @@ class Signout extends Component {
   }
 
   logout = () => {
+    console.log(this.props)
     firebase.auth().signOut()
     localStorage.setItem("isSignedIn", false)
     console.log("Signed out")
-    this.props.push("/")
+    this.props.history.push("/")
   }
 
   render() {
@@ -24,4 +26,4 @@ class Signout extends Component {
   }
 }
 
-export default Signout;
+export default withRouter(Signout);

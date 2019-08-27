@@ -26,7 +26,7 @@ class Navabar extends Component {
               <Link to="/user">User</Link>
             </li>
             <li style={this.liStyle}>
-              <Signout push={this.props.push}/>
+              <Signout />
             </li>
           </ul>
 
