@@ -25,7 +25,7 @@ class Login extends Component {
       signInSuccessWithAuthResult: (authResult) => {
         // let token = authResult.credential.idToken.trim()
         // send request to API with the body after login
-        fetch("http://localhost:8080/auth/login", {
+        fetch("https://album-api-hz.herokuapp.com/auth/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

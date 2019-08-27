@@ -24,6 +24,6 @@ yarn-error.log*
 
 package-lock.json
 
-/src/secrets.js
+secrets.js   
 
 /public/images

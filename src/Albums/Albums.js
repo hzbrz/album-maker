@@ -21,7 +21,7 @@ class Albums extends Component {
   componentDidMount = () => {
     // if signed in fetch the album if not dont even do anything
     if (this.state.isSignedIn) {
-      fetch("http://localhost:8080/album/albums", {
+      fetch("https://album-api-hz.herokuapp.com/album/albums", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${this.state.token}`
