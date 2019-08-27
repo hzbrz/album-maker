@@ -20,7 +20,8 @@ class User extends Component {
       name: "",
       profilePic: "",
       emai: ""
-    }
+    },
+    refLink: null
   }
 
   // sending fetch post req for user profile information from api
@@ -88,6 +89,7 @@ class User extends Component {
       })
       .then(resData => {
         console.log("User data: ", resData);
+        this.setState({ refLink: resData.refLink })
       })
       .catch(err => console.log(err))
   }
@@ -112,6 +114,7 @@ class User extends Component {
         <p>Welcome {this.state.name}! Do you want to signout?</p>
         <button onClick={this.createRoom}>Create Room</button>
         <br />
+        {this.state.refLink ? <p>Please invite others: {this.state.refLink}</p> : <p>Usser did not create any albums</p>}
         <br />
         {/* <button onClick={this.logout}>Sign-out</button> */}
       </div>
