@@ -29,7 +29,6 @@ class User extends Component {
     fetch("https://album-api-hz.herokuapp.com/auth/user", {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
         "Authorization": `Bearer ${this.state.token}`
       }
     })
@@ -112,9 +111,9 @@ class User extends Component {
         <img style={this.photoStyle} src={this.state.profilePic} alt="User's profile" />
         <p>Email: {this.state.email}</p>
         <p>Welcome {this.state.name}! Do you want to signout?</p>
-        <button onClick={this.createRoom}>Create Room</button>
+        <button onClick={this.createRoom}>Click to generate album</button>
         <br />
-        {this.state.refLink ? <p>Please invite others: {this.state.refLink}</p> : <p>Usser did not create any albums</p>}
+        {this.state.refLink ? <p>Please invite others: {this.state.refLink}</p> : <p>User did not create any albums</p>}
         <br />
         {/* <button onClick={this.logout}>Sign-out</button> */}
       </div>
