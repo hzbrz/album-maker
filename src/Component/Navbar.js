@@ -15,6 +15,8 @@ class Navabar extends Component {
     paddingnBottom: "90px",
   }
 
+  
+
   render() {
     return (
         <div>
