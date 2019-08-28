@@ -27,7 +27,7 @@ class Albums extends Component {
         token: localStorage.getItem("token"),
         albums: [],
         isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false,
-        albumId: props.location.state.albumId.split("/")[1],
+        albumId: props.location.state.albumId.split("/")[1].trim(),
       }
     }
   }

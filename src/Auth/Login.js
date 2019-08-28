@@ -8,7 +8,17 @@ class Login extends Component {
   state = {
     isSignedIn: JSON.parse(localStorage.getItem("isSignedIn")) || false, // Local signed-in state.
     token: "",
+    albumId: null
   };
+
+  componentDidMount() {
+    // this is used to check if the user is redirected from a referral link
+    if (typeof this.props.location.state == "undefined") {
+      this.setState({ albumId: null })
+    } else {
+      this.setState({ albumId: this.props.location.state.albumId.split("/")[1].trim() })
+    }
+  }
 
   // firebaseUI config 
   uiConfig = {
@@ -37,6 +47,7 @@ class Login extends Component {
             lastName: authResult.additionalUserInfo.profile.family_name,
             profile_image: authResult.additionalUserInfo.profile.picture,
             profile_name: authResult.additionalUserInfo.profile.name,
+            albumId: this.state.albumId
           })
         })
           .then(res => {
