@@ -10,14 +10,14 @@ module.exports = (req, res, next) => {
     // get the albums ids from the album_ids coll that tarcks all album/rooms
     firestore.collection("albums_ids").doc(albumIdArrSecret).get()
       .then(snap => {
-        if (snap.data().ids.includes(album_id)) {
+        if (snap.data().ids.includes(albumId)) {
           console.log("Album id found in the array, this room exists!")
           // then setting
           firestore.collection("users").doc(id).update({
-            albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(album_id)
+            albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(albumId)
           })
           // sending resposne with the albumId for client side operations
-          res.status(200).json({ message: "New album added to the user's albums", albumId: album_id })
+          res.status(200).json({ message: "New album added to the user's albums", albumId: albumId })
         } else {
           // if the albumId does not match any of the rooms that in the db then
           console.log("Album id was not matched with anything in db albums")
