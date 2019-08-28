@@ -3,11 +3,11 @@ const express = require("express");
 const router = express.Router();  
 
 const isAuth = require('../middleware/is-auth');
-const loggedInRef = require("../middleware/loggedInRef");
+// const loggedInRef = require("../middleware/loggedInRef");
 const photoController = require("../controllers/photoController");
 
 // if the user is redirected while logged in and has an invitation to an album then handle it in the same func or middleware?
-router.post("/albums", [isAuth, loggedInRef], photoController.getUserAlbums);
+router.post("/albums", isAuth, photoController.getUserAlbums);
 
 router.post("/photos", isAuth, photoController.getUserPhotos);
 
