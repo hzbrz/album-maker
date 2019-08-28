@@ -2,7 +2,8 @@ const firebase = require("firebase");
 const albumIdArrSecret = require("../secrets").secret_id_for_albums_arr;
 
 module.exports = (req, res, next) => {
-  let albumId = req.body.albumId;
+  const albumId = req.body.albumId;
+  const userId = req.userId;
   let firestore = firebase.firestore();
   if (!albumId) {
     console.log("User was not redirected after invite")
@@ -13,7 +14,7 @@ module.exports = (req, res, next) => {
         if (snap.data().ids.includes(albumId)) {
           console.log("Album id found in the array, this room exists!")
           // then setting
-          firestore.collection("users").doc(id).update({
+          firestore.collection("users").doc(userId).update({
             albumUserPartOf: firebase.firestore.FieldValue.arrayUnion(albumId)
           })
           // sending resposne with the albumId for client side operations
