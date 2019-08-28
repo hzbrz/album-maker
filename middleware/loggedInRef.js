@@ -1,4 +1,5 @@
 const firebase = require("firebase");
+const albumIdArrSecret = require("../secrets").secret_id_for_albums_arr;
 
 module.exports = (req, res, next) => {
   let albumId = req.body.albumId;
