@@ -26,7 +26,7 @@ class User extends Component {
 
   // sending fetch post req for user profile information from api
   componentDidMount() {
-    fetch("https://album-api-hz.herokuapp.com/auth/user", {
+    fetch("https://album-creator-api.herokuapp.com/auth/user", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${this.state.token}`
@@ -69,7 +69,7 @@ class User extends Component {
 
   createRoom = () => {
     console.log("Trying to create room")
-    fetch("https://album-api-hz.herokuapp.com/setting/room", {
+    fetch("https://album-creator-api.herokuapp.com/setting/room", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

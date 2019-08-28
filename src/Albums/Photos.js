@@ -46,7 +46,7 @@ class Photos extends Component {
   }
 
   getPhotos = () => {
-    fetch("https://album-api-hz.herokuapp.com/album/photos", {
+    fetch("https://album-creator-api.herokuapp.com/album/photos", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,7 +72,7 @@ class Photos extends Component {
   }
 
   deletePost = (photoId, albumId, userId) => {
-    fetch("https://album-api-hz.herokuapp.com/album/photo/" + photoId + "/" + albumId + "/" + userId, {
+    fetch("https://album-creator-api.herokuapp.com/album/photo/" + photoId + "/" + albumId + "/" + userId, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${this.state.token}`

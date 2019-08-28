@@ -96,7 +96,7 @@ class Photo extends Component {
           snap.ref.getDownloadURL().then(url => {
             console.log("File available at: ", url)
             // sending a post request with the download URL so I can store in db from API
-            fetch("https://album-api-hz.herokuapp.com/album/photo", {
+            fetch("https://album-creator-api.herokuapp.com/album/photo", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
