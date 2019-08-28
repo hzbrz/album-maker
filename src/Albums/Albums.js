@@ -54,7 +54,7 @@ class Albums extends Component {
         })
         .then(resData => {
           console.log("Albums fetched ", resData);
-          this.setState({ albums: resData.albums })
+          this.setState({ albums: resData.albums || [] })
         })
         .catch(err => console.log(err))
     } else {
