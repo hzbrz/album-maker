@@ -1,6 +1,7 @@
 const firebase = require("firebase");
 
 exports.getUserAlbums = (req, res, next) => {
+  const albumId = req.body.albumId
   const userId = req.userId;
   let firestore = firebase.firestore();
   let albumColl = firestore.collection("albums")
