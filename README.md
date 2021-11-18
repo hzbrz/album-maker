@@ -1,2 +1,1 @@
-# Wedding app Hasan Zahid
-### An app that lets people create albums at events
+### An applocation that can create albums at events
